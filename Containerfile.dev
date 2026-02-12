@@ -1,0 +1,24 @@
+# Use bookworm based image
+FROM docker.io/library/python:3.11-bookworm
+
+# Install general build tools needed for grove.py and seeed-dht
+RUN apt-get update && apt-get install -y \
+    python3-dev \
+    # gcc/g++/make/swig: required to compile C-extensions 
+    # for bridging the Python logic to the physical I2C/GPIO pins on the Pi
+    gcc \
+    g++ \
+    make \
+    swig \
+    # rm -rf: Cleans the package cache to keep the image size down
+    && rm -rf /var/lib/apt/lists/*
+
+# Create and navigate to the application's home directory
+WORKDIR /app
+
+# Copy and install requirements
+COPY edge/services/vitals/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Run the script - map the code at runtime
+CMD ["python", "edge/services/vitals/main.py"]
