@@ -26,6 +26,6 @@ Run the following from the project root:
 ```
 
 ## Upcoming Features
-- [ ] **Local Alerts** Local alerts via an LED when environmental data is outside of safe range, implemented via thresholds.
+- [ ] **Local Alerts:** Local alerts via an LED when environmental data is outside of safe range, implemented via thresholds.
 - [ ] **Cloud Dashboard:** Flask app web interface for viewing real-time telemetry.
 - [ ] **K3s Deployment:** Transition from Podman to lightweight Kubernetes orchestration for production.
