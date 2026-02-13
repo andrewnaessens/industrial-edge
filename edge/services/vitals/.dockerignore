@@ -1,0 +1,25 @@
+# Ignore the Containerfile and itself
+Containerfile
+.dockerignore
+
+# As a precaution, in case they ever end up in this directory:
+# Ignore secrets
+.env
+*.env
+auth.json
+
+# Ignore local Git metadata
+.git
+.gitignore
+
+# Ignore README
+README.md
+
+# Ignore Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/

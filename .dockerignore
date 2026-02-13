@@ -1,0 +1,29 @@
+# As a precaution, in case the build context is ever changed to the root
+
+# Ignore Containerfiles and itself
+Containerfile
+Containerfile.dev
+.dockerignore
+
+# Ignore secrets
+.env
+*.env
+# As a precaution, not currently being used
+# Quay.io credentials are stored in Github Secrets
+auth.json 
+
+# Ignore local Git metadata
+.git
+.gitignore
+
+# Ignore README
+README.md
+
+# Ignore Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
