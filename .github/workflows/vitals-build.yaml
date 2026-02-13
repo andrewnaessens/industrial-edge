@@ -1,0 +1,49 @@
+name: Industrial Edge Vitals Build
+on:
+  push:
+    branches: [ main ]
+    # Only triggers if changes are made within the vitals directory
+    paths:
+      - 'edge/services/vitals/**' 
+
+jobs:
+  build-and-push:
+    # Build using GitHub's hosted Ubuntu runners
+    runs-on: ubuntu-latest
+    steps:
+      # Download the project repository from GitHub to the runner's workspace
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Required for cross-compilation: emulates ARM64 hardware on AMD64 GitHub runners
+      - name: Set up QEMU (For ARM64 Support - Raspberry Pi)
+        uses: docker/setup-qemu-action@v3
+
+      # Secure registry authentication using Robot Account credentials
+      - name: Login to Quay.io
+        uses: redhat-actions/podman-login@v1
+        with:
+          username: ${{ secrets.QUAY_USER }}
+          password: ${{ secrets.QUAY_TOKEN }}
+          registry: quay.io
+
+      # Builds multi-arh image (for laptop + Pi)
+      - name: Build Multi-Arch Image
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: industrial-edge-vitals
+          tags: latest ${{ github.sha }}
+          archs: amd64, arm64 # Builds for both laptop and Pi
+          containerfiles: ./edge/services/vitals/Containerfile
+          # Build context is isolated to the vitals directory to prevent secrets being leaked
+          context: ./edge/services/vitals/
+
+      # Pushes image to Quay.io registry
+      - name: Push to Quay.io
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
+          # Path to my Quay.io namespace
+          registry: quay.io/andrewn-dev/ 
