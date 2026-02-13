@@ -30,4 +30,4 @@ RUN useradd -m edgeuser && chown -R edgeuser /app
 USER edgeuser
 
 # Start vitals service
-CMD ["python", "main.py"]
+CMD ["python", "-u", "main.py"]
