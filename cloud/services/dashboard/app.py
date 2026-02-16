@@ -1,0 +1,86 @@
+import os
+from datetime import datetime
+import json
+import threading
+from flask import Flask, render_template, jsonify
+from dotenv import load_dotenv
+import paho.mqtt.client as mqtt
+
+# Load local .env from the dashboard folder
+load_dotenv()
+
+app = Flask(__name__)
+
+# Global variable to store the latest Pi sensor data
+vitals = {
+    "temperature": "--",
+    "temperature_event": "--",
+    "humidity": "--", 
+    "humidity_event": "--",
+    "illuminance": "--", 
+    "illuminance_event": "--",
+    "status": "Offline",
+    "last_seen": "Never"
+}
+
+# Callbacks (connect/message) for HiveMQ Cloud
+def on_connect(client, userdata, flags, rc, properties):
+    if rc == 0:
+        print("Dashboard connected to HiveMQ Cloud!")
+        client.subscribe("factory/edge/vitals")
+    else:
+        print(f"Connection failed: {rc}")
+
+def on_message(client, userdata, msg):
+    # Use the global vitals variable
+    global vitals
+    try:
+        # msg.payload is a byte-string (b'{"temp": 22...}')
+        # .decode() turns it into a Python string
+        payload = msg.payload.decode()
+        # Parse the JSON
+        data = json.loads(payload)
+        # Update the vitals variable
+        # .get() to avoid crashing if a key is missing
+        vitals = {
+            "temperature": data.get("temperature", "--"),
+            "temperature_event": data.get("temperature_event", "--"),
+            "humidity": data.get("humidity", "--"),
+            "humidity_event": data.get("humidity_event", "--"),
+            "illuminance": data.get("illuminance", "--"),
+            "illuminance_event": data.get("illuminance_event", "--"),
+            "status": "Online",
+            "last_seen": datetime.now().strftime("%H:%M:%S")
+        }
+        # Log the update (print to the console)
+        print(f"Live Cloud Update: {vitals['last_seen']} Vitals: {vitals}")
+    except Exception as e:
+        # Log the error (print to the console)
+        print(f"Parsing error: {e}")
+
+# Background thread for MQTT
+def start_mqtt():
+    # Use VERSION2 for Paho 2.1.0+
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+    client.username_pw_set(os.environ.get("MQTT_USER"), os.environ.get("MQTT_PASSWORD"))
+    client.tls_set() # Required for HiveMQ Cloud SSL
+    
+    client.on_connect = on_connect
+    client.on_message = on_message
+    
+    client.connect(os.environ.get("MQTT_BROKER"), 8883)
+    client.loop_forever()
+
+# Flask routes
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/api/data')
+def get_data():
+    return jsonify(vitals)
+
+if __name__ == '__main__':
+    # Start MQTT in a background thread so it doesn't block Flask
+    threading.Thread(target=start_mqtt, daemon=True).start()
+    app.run(debug=True)
