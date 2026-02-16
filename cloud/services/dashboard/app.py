@@ -60,11 +60,10 @@ def start_mqtt():
     client.on_connect = on_connect
     client.on_message = on_message
     
-    client.connect(os.environ.get("MQTT_BROKER"), 8883)
-    client.loop_forever()
+    client.connect(os.environ.get("MQTT_BROKER"), 8883, 60)
+    client.loop_start()
 
-# Start MQTT in a background thread so it doesn't block Flask
-threading.Thread(target=start_mqtt, daemon=True).start()
+start_mqtt()
 
 # Flask routes
 @app.route('/')
