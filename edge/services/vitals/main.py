@@ -34,23 +34,69 @@ def read_vitals():
             # Sensor libraries are imported here so program can run on Laptop with mock data
             from seeed_dht import DHT
             from grove.grove_light_sensor_v1_2 import GroveLightSensor
+            from grove.grove_led import GroveLed
 
-            # Grove - Light Sensor connected to port A2
-            lightSensor = GroveLightSensor(2)
             # Grove - Temperature/Humidity Sensor connected to port D5
-            sensor = DHT("11", 5)
-            
+            temp_humi_sensor = DHT("11", 5)
+            # Grove - Light Sensor connected to port A2
+            light_sensor = GroveLightSensor(2)
+            # Grove - LED connected to port D22
+            led1 = GroveLed(22)
+            # Grove - LED connected to port D24
+            led2 = GroveLed(24)
+            # Grove - LED connected to port D26
+            led3 = GroveLed(26)
+
             # Read temperature/humidity sensor
-            humi, temp = sensor.read()
-            # Read light sensor
-            light = lightSensor.light
+            humi, temp = temp_humi_sensor.read()
+             # Read light sensor
+            light = light_sensor.light
+            
+            # Temperature thresholds
+            temp_thresh1 = 5.0
+            temp_thresh2 = 25.0
+            # Humidity threshold
+            humi_thresh1 = 60
+            # Light threshold
+            light_thresh1 = 200
+
+            # If temperature sensor reading is less than/equal to temperature threshold1
+            # and less than/equal to temperature threshold2 "Within safe temperature range!"
+            # else "Outside safe temperature range!"
+            if temp_thresh1 <= temp and temp <= temp_thresh2:
+                temp_event = "Within safe temperature range!"
+                led1.off()
+            else:
+                temp_event = "Outside safe temperature range!"
+                led1.on()
+
+            # If humidity sensor reading is less than/equal to humidity threshold 
+            # "Within safe humidity range!" else "Outside safe humidity range!"
+            if humi <= humi_thresh1:
+                humi_event = "Within safe humidity range!"
+                led2.off()
+            else: 
+                humi_event = "Outside safe humidity range!"
+                led2.on()
+
+            # If light sensor reading is greater than/equal to light threshold 
+            # "Enought light!" else "Not enough light!"
+            if light >= light_thresh1:
+                illuminance_event = "Sufficient light!"
+                led3.off()
+            else: 
+                illuminance_event = "Insufficient light!"
+                led3.on()
 
             # Sensor Data: Real sensor data from hardware (edge device: raspberry pi)
             return {
                 "mode": "hardware", 
-                "temperature": f"{temp:.1f}C", 
-                "humidity": f"{humi:.1f}%", 
-                "illuminance": f"{light:.1f}lx"
+                "temperature": f"{temp:.1f}", 
+                "temperature_event": f"{temp_event}",
+                "humidity": f"{humi:.1f}",
+                "humidity_event": f"{humi_event}",
+                "illuminance": f"{light:.1f}",
+                "illuminance_event": f"{illuminance_event}"
             }
         except Exception as e:
             return {"mode": "error", "message": str(e)}
