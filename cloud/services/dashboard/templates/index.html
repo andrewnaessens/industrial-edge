@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Industrial Edge Hub Dashboard</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+        <style>
+            body { background-color: #121212; color: #fff; min-height: 100vh; }
+            .card { background-color: #1e1e1e; border: 1px solid #333; color: #fff; }
+            .vitals-value { font-size: 3.5rem; font-weight: bold; color: #7dc690; }
+            .vitals-value-red { font-size: 3.5rem; font-weight: bold; color: #d96682; }
+        </style>
+    </head>
+    <body>
+        <section class="section p-5">
+            <h1 class="title has-text-centered has-text-white">Industrial Edge Hub</h1>
+        </section>
+
+        <section class="section p-4">
+            <div class="container">
+                <h2 class="title is-4 has-text-centered has-text-white mb-4">Live Vitals</h2>
+                <div class="columns is-centered">
+                    <div class="column is-4">
+                        <div class="card has-text-centered p-5">
+                            <p class="heading is-size-5">Temperature</p>
+                            <p id="temperature" class="vitals-value-red">--</p>
+                            <p class="is-size-5">°C</p>
+                            <p id="temperature_event" class="has-text-weight-bold tag is-danger">--</p>
+                        </div>
+                    </div>
+                    <div class="column is-4">
+                        <div class="card has-text-centered p-5">
+                            <p class="heading is-size-5">Humidity</p>
+                            <p id="humidity" class="vitals-value-red">--</p>
+                            <p class="is-size-5">%</p>
+                            <p id="humidity_event" class="has-text-weight-bold tag is-danger">--</p>
+                        </div>
+                    </div>
+                    <div class="column is-4">
+                        <div class="card has-text-centered p-5">
+                            <p class="heading is-size-5">Illuminance</p>
+                            <p id="illuminance" class="vitals-value-red">--</p>
+                            <p class="is-size-5">lx</p>
+                            <p id="illuminance_event" class="has-text-weight-bold tag is-danger">--</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="section p-4">
+            <div class="has-text-centered">
+                <p class="mt-5">
+                    System Status: <span id="status" class="has-text-weight-bold tag is-danger">Offline</span>
+                </p>
+                <p class="is-size-7 mt-4">
+                    Lastest Data Received at: <span id="last-seen" class="has-text-weight-bold">Never</span>
+                </p>
+            </div>
+        </section>
+
+        <script>
+            const fetchVitals = async () => {
+                try {
+                    const response = await fetch('/api/data');
+                    const data = await response.json();
+                    
+                    // Update dashboard UI elements with vitals data
+
+                    const temp = document.getElementById('temperature')
+                    temp.innerText = data.temperature;
+                    const tempEvent = document.getElementById('temperature_event')
+                    tempEvent.innerText = data.temperature_event;
+                    if (data.temperature_event == "Within safe temperature range!") {
+                        // Class tag is-success: text is green
+                        temp.className = 'vitals-value';
+                        tempEvent.className = 'has-text-weight-bold tag is-success';
+                    } else {
+                        // Class tag is-danger: text is red
+                        temp.className = 'vitals-value-red';
+                        tempEvent.className = 'has-text-weight-bold tag is-danger';
+                    }    
+
+                    const humi = document.getElementById('humidity')
+                    humi.innerText = data.humidity;
+                    const humiEvent = document.getElementById('humidity_event')
+                    humiEvent.innerText = data.humidity_event;
+                    if (data.humidity_event == "Within safe humidity range!") {
+                        // Class tag is-success: text is green
+                        humi.className = 'vitals-value';
+                        humiEvent.className = 'has-text-weight-bold tag is-success';
+                    } else {
+                        // Class tag is-danger: text is red
+                        humi.className = 'vitals-value-red';
+                        humiEvent.className = 'has-text-weight-bold tag is-danger';
+                    }    
+
+                    const light = document.getElementById('illuminance')
+                    light.innerText = data.illuminance;
+                    const lightEvent = document.getElementById('illuminance_event')
+                    lightEvent.innerText = data.illuminance_event;
+                    if (data.illuminance_event == "Sufficient light!") {
+                        // Class tag is-success: text is green
+                        light.className = 'vitals-value';
+                        lightEvent.className = 'has-text-weight-bold tag is-success';
+                    } else {
+                        // Class tag is-danger: text is red
+                        light.className = 'vitals-value-red';
+                        lightEvent.className = 'has-text-weight-bold tag is-danger';
+                    }    
+                    
+                    // Update dashboard UI element with timestamp of the lastest data received
+                    document.getElementById('last-seen').innerText = data.last_seen;
+
+                    // Get element by Id 'status' and assign to variable StatusTag
+                    const statusTag = document.getElementById('status');
+                    // Update the text with the current status (e.g. online or offline)
+                    statusTag.innerText = data.status;
+                    // Check the status
+                    if (data.status === 'Online') {
+                        // Class tag is-success: text is green
+                        statusTag.className = 'has-text-weight-bold tag is-success';
+                    } else {
+                        // Class tag is-danger: text is red
+                        statusTag.className = 'has-text-weight-bold tag is-danger';
+                    }    
+                } catch (error) {
+                    // Log any errors to the browser console
+                    console.error("Dashboard Sync Error:", error);
+                    document.getElementById('status').innerText = "Error";
+                    document.getElementById('status').className = 'has-text-weight-bold tag is-white';
+                }
+            };
+
+            // Poll every 5 seconds
+            setInterval(fetchVitals, 5000);
+        </script>
+    </body>
+</html>
