@@ -1,6 +1,6 @@
 # As a precaution, in case the build context is ever changed to the root
 
-# Ignore Containerfiles and itself
+# Ignore Containerfiles and itself (build blueprints)
 Containerfile
 Containerfile.dev
 .dockerignore
@@ -11,6 +11,13 @@ Containerfile.dev
 # As a precaution, not currently being used
 # Quay.io credentials are stored in Github Secrets
 auth.json 
+
+# Ignore infrastructure and automation blueprints
+.github/
+k8s/
+scripts/
+*.yaml
+*.yml
 
 # Ignore local Git metadata
 .git
