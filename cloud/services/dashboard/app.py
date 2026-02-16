@@ -71,6 +71,9 @@ def start_mqtt():
     client.connect(os.environ.get("MQTT_BROKER"), 8883)
     client.loop_forever()
 
+# Start MQTT in a background thread so it doesn't block Flask
+threading.Thread(target=start_mqtt, daemon=True).start()
+
 # Flask routes
 @app.route('/')
 def index():
@@ -81,6 +84,4 @@ def get_data():
     return jsonify(vitals)
 
 if __name__ == '__main__':
-    # Start MQTT in a background thread so it doesn't block Flask
-    threading.Thread(target=start_mqtt, daemon=True).start()
     app.run(debug=True)
