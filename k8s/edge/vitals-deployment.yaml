@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vitals-service
+  labels:
+    app: vitals
+spec:
+  replicas: 1 # Declares that 1 instance must always be running
+  selector:
+    matchLabels:
+      app: vitals
+  template:
+    metadata:
+      labels:
+        app: vitals
+    spec:
+      containers:
+      - name: vitals-container
+        image: quay.io/andrewn-dev/industrial-edge-vitals:latest # Outer loop (production) image
+        imagePullPolicy: Always # Ensures the Pi always grabs the latest build
+        
+        # Pulling HiveMQ credentials from the K3s Secret Vault
+        env:
+        - name: MQTT_BROKER
+          valueFrom:
+            secretKeyRef:
+              name: hivemq-vitals
+              key: MQTT_BROKER
+        - name: MQTT_USER
+          valueFrom:
+            secretKeyRef:
+              name: hivemq-vitals
+              key: MQTT_USER
+        - name: MQTT_PASS
+          valueFrom:
+            secretKeyRef:
+              name: hivemq-vitals
+              key: MQTT_PASS
+        - name: MQTT_PORT
+          value: "8883"
+
+        # Map physical Pi nodes into the container
+        volumeMounts:
+        - name: dev-gpio0
+          mountPath: /dev/gpiochip0
+        - name: dev-gpio1
+          mountPath: /dev/gpiochip1
+        - name: dev-i2c
+          mountPath: /dev/i2c-1
+          
+        # Allow the container to interact with hardware
+        securityContext:
+          privileged: true
+
+      # Link the internal container paths to the physical Raspberry Pi paths
+      volumes:
+      - name: dev-gpio0
+        hostPath:
+          path: /dev/gpiochip0
+          type: CharDevice
+      - name: dev-gpio1
+        hostPath:
+          path: /dev/gpiochip1
+          type: CharDevice
+      - name: dev-i2c
+        hostPath:
+          path: /dev/i2c-1
+          type: CharDevice
