@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Industrial Edge: Inner Loop Launcher
-# This script runs the containerised vitals service with local code mounted.
+# This script runs the containerised vitals service with local code mounted
 
 # Move to the directory where the script lives, then go up one level to the root
 PARENT_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P)
@@ -15,7 +15,7 @@ if [ ! -f "Containerfile.dev" ]; then
     exit 1
 fi
 
-# Run the container
+# Run the container:
 # --rm: Deletes container after exit
 # -it: Interactive terminal for logs
 # --env-file: Inject HiveMQ secrets
