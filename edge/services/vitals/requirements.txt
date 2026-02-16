@@ -1,4 +1,9 @@
+# MQTT messaging (HiveMQ Cloud)
 paho-mqtt>=2.0.0
+
+# Raspberry Pi lgpio
 rpi-lgpio
+
+# Seeed Studio
 grove.py
 seeed-python-dht
