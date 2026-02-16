@@ -41,17 +41,9 @@ def on_message(client, userdata, msg):
         # Parse the JSON
         data = json.loads(payload)
         # Update the vitals variable
-        # .get() to avoid crashing if a key is missing
-        vitals = {
-            "temperature": data.get("temperature", "--"),
-            "temperature_event": data.get("temperature_event", "--"),
-            "humidity": data.get("humidity", "--"),
-            "humidity_event": data.get("humidity_event", "--"),
-            "illuminance": data.get("illuminance", "--"),
-            "illuminance_event": data.get("illuminance_event", "--"),
-            "status": "Online",
-            "last_seen": datetime.now().strftime("%H:%M:%S")
-        }
+        vitals.update(data)
+        vitals["status"] = "Online"
+        vitals["last_seen"] = datetime.now().strftime("%H:%M:%S")
         # Log the update (print to the console)
         print(f"Live Cloud Update: {vitals['last_seen']} Vitals: {vitals}")
     except Exception as e:
