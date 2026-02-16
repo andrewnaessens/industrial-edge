@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: industrial-edge-dashboard
+    env: python
+    # Point to the dashboard directory
+    rootDir: cloud/services/dashboard
+    # Build command: install dependencies from requirements.txt
+    buildCommand: pip install -r requirements.txt
+    # Start command: use Gunicorn as the production WSGI (Web Server Gateway Interface) server
+    # Only run one process to keep sensor data in sync
+    startCommand: gunicorn --workers 1 --bind 0.0.0.0:$PORT app:app
+    envVars:
+      # Pyhton version used
+      - key: PYTHON_VERSION
+        value: 3.9.6 
+      # Placeholder keys for HiveMQ secrets
+      # For security, use manually entered values in the Render Dashboard
+      - key: MQTT_BROKER
+        sync: false 
+      - key: MQTT_USER
+        sync: false
+      - key: MQTT_PASSWORD
+        sync: false
